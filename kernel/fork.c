@@ -94,8 +94,6 @@
 #include <linux/thread_info.h>
 #include <linux/cpufreq_times.h>
 #include <linux/scs.h>
-#include <linux/devfreq_boost.h>
-#include <linux/cpu_input_boost.h>
 
 #include <asm/pgtable.h>
 #include <asm/pgalloc.h>
@@ -2238,26 +2236,6 @@ long _do_fork(unsigned long clone_flags,
 	struct task_struct *p;
 	int trace = 0;
 	long nr;
-
-	/* Boost DDR bus to the max for 50 ms when userspace launches an app */
-	if (task_is_zygote(current)) {
-	/*
-	* We don't want to boost CPU and DDR that much if kp_mode = 0, so
-	* we'll treat it as balanced here.
-	* We'll boost CPU and DDR if kp_mode is set to 3, and if it's set
-	* to 2 or 0, we boost it a little bit, if it's set to 1, we do
-	* nothing.
-	*/
-	  if (kp_active_mode() == 3) {
-	    cpu_input_boost_kick_max(37);
-	    devfreq_boost_kick_max(DEVFREQ_MSM_LLCCBW, 62);
-	    devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 62);
-	  } else if (kp_active_mode() == 2 || kp_active_mode() == 0) {
-	    cpu_input_boost_kick_max(15);
-	    devfreq_boost_kick_max(DEVFREQ_MSM_LLCCBW, 25);
-	    devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 25);
-      }
-}
 
 	/*
 	 * Determine whether and which event to report to ptracer.  When
